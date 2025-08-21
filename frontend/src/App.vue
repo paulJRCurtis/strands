@@ -16,11 +16,11 @@
              @dragover.prevent="isDragOver = true" 
              @dragleave="isDragOver = false" 
              @drop.prevent="handleDrop">
-          <input type="file" @change="handleFileUpload" accept=".json,.yml,.yaml" class="file-input" id="file-input">
+          <input type="file" @change="handleFileUpload" accept=".json,.yml,.yaml,.md" class="file-input" id="file-input">
           <label for="file-input" class="upload-label">
             <div class="upload-icon">📁</div>
             <p>{{ selectedFile ? selectedFile.name : 'Drop files here or click to browse' }}</p>
-            <p class="file-types">Supports JSON, YAML files</p>
+            <p class="file-types">Supports JSON, YAML, Markdown files</p>
           </label>
         </div>
         <button @click="analyzeFile" :disabled="!selectedFile" class="analyze-btn">
@@ -116,13 +116,17 @@ export default {
   },
   methods: {
     handleFileUpload(event) {
+      console.log('File upload triggered', event.target.files)
       this.selectedFile = event.target.files[0]
+      console.log('Selected file:', this.selectedFile)
     },
     handleDrop(event) {
+      console.log('Drop event triggered', event.dataTransfer.files)
       this.isDragOver = false
       const files = event.dataTransfer.files
       if (files.length > 0) {
         this.selectedFile = files[0]
+        console.log('Selected file via drop:', this.selectedFile)
       }
     },
     toggleDarkMode() {
