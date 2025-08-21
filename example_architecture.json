@@ -1,0 +1,56 @@
+{
+  "services": [
+    {
+      "name": "web-server",
+      "public": true,
+      "authentication": false,
+      "port": 80
+    },
+    {
+      "name": "api-server",
+      "public": true,
+      "authentication": true,
+      "port": 443
+    }
+  ],
+  "firewall_rules": [
+    {
+      "source": "0.0.0.0/0",
+      "port": 80,
+      "protocol": "HTTP"
+    },
+    {
+      "source": "0.0.0.0/0",
+      "port": 22,
+      "protocol": "SSH"
+    }
+  ],
+  "data_flows": [
+    {
+      "source": "web-server",
+      "destination": "database",
+      "encrypted": false
+    }
+  ],
+  "databases": [
+    {
+      "name": "user-db",
+      "data_types": ["pii", "credentials"],
+      "encrypted_at_rest": false
+    }
+  ],
+  "iam_policies": [
+    {
+      "name": "admin-policy",
+      "actions": ["*"],
+      "resources": ["*"]
+    }
+  ],
+  "storage": [
+    {
+      "name": "public-bucket",
+      "public_read": true,
+      "encryption": false
+    }
+  ]
+}
