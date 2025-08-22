@@ -34,8 +34,8 @@ class ArchitectureParserAgent(BaseAgent):
         if services:
             result['services'] = [{
                 'name': row.get('Name', ''),
-                'public': row.get('Public') == '✅',
-                'authentication': row.get('Authentication') == '✅',
+                'public': row.get('Public', '').lower() in ['yes', '✅'],
+                'authentication': row.get('Authentication', '').lower() in ['yes', '✅'],
                 'port': int(row.get('Port', 0)) if row.get('Port', '').isdigit() else 0
             } for row in services]
         
@@ -54,7 +54,7 @@ class ArchitectureParserAgent(BaseAgent):
             result['data_flows'] = [{
                 'source': row.get('Source', ''),
                 'destination': row.get('Destination', ''),
-                'encrypted': row.get('Encrypted') == '✅'
+                'encrypted': row.get('Encrypted', '').lower() in ['yes', '✅']
             } for row in data_flows]
         
         # Parse Databases table
@@ -63,7 +63,7 @@ class ArchitectureParserAgent(BaseAgent):
             result['databases'] = [{
                 'name': row.get('Name', ''),
                 'data_types': [dt.strip() for dt in row.get('Data Types', '').split(',')],
-                'encrypted_at_rest': row.get('Encrypted at Rest') == '✅'
+                'encrypted_at_rest': row.get('Encrypted at Rest', '').lower() in ['yes', '✅']
             } for row in databases]
         
         # Parse IAM Policies table
@@ -80,8 +80,8 @@ class ArchitectureParserAgent(BaseAgent):
         if storage:
             result['storage'] = [{
                 'name': row.get('Name', ''),
-                'public_read': row.get('Public Read') == '✅',
-                'encryption': row.get('Encryption') == '✅'
+                'public_read': row.get('Public Read', '').lower() in ['yes', '✅'],
+                'encryption': row.get('Encryption', '').lower() in ['yes', '✅']
             } for row in storage]
         
         return result

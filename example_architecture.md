@@ -4,8 +4,8 @@
 
 | Name | Public | Authentication | Port |
 |------|--------|----------------|------|
-| web-server | ✅ | ❌ | 80 |
-| api-server | ✅ | ✅ | 443 |
+| web-server | Yes | No | 80 |
+| api-server | Yes | Yes | 443 |
 
 ## Firewall Rules
 
@@ -18,13 +18,13 @@
 
 | Source | Destination | Encrypted |
 |--------|-------------|-----------|
-| web-server | database | ❌ |
+| web-server | database | No |
 
 ## Databases
 
 | Name | Data Types | Encrypted at Rest |
 |------|------------|-------------------|
-| user-db | pii, credentials | ❌ |
+| user-db | pii, credentials | No |
 
 ## IAM Policies
 
@@ -36,4 +36,4 @@
 
 | Name | Public Read | Encryption |
 |------|-------------|------------|
-| public-bucket | ✅ | ❌ |
+| public-bucket | Yes | No |

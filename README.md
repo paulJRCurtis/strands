@@ -12,6 +12,9 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# For development (includes testing tools)
+pip install -r requirements-dev.txt
+
 # Run the coordinator
 python -m src.coordinator.main
 
