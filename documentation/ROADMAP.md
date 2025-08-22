@@ -3,7 +3,7 @@
 ## Immediate Improvements (Next Sprint)
 
 ### Frontend Structure
-- [ ] Split App.vue into components (UploadCard, ResultsCard, FindingCard)
+- [x] Split App.vue into components (UploadCard, ResultsCard, FindingCard)
 - [ ] Create composables for file handling and API calls
 - [ ] Add proper error handling and loading states
 - [ ] Implement Vue Router for multi-page navigation

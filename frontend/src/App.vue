@@ -10,108 +10,28 @@
     </header>
     
     <main class="main">
-      <div class="upload-card">
-        <h2>Upload Architecture</h2>
-        <div class="upload-area" :class="{ 'drag-over': isDragOver }" 
-             @dragover.prevent="isDragOver = true" 
-             @dragleave="isDragOver = false" 
-             @drop.prevent="handleDrop">
-          <input type="file" @change="handleFileUpload" accept=".json,.yml,.yaml,.md" class="file-input" id="file-input">
-          <label for="file-input" class="upload-label">
-            <div class="upload-icon">📁</div>
-            <p>{{ selectedFile ? selectedFile.name : 'Drop files here or click to browse' }}</p>
-            <p class="file-types">Supports JSON, YAML, Markdown files</p>
-          </label>
-        </div>
-        <button @click="analyzeFile" :disabled="!selectedFile" class="analyze-btn">
-          <span v-if="isAnalyzing">🔄 Analyzing...</span>
-          <span v-else>🔍 Analyze Architecture</span>
-        </button>
-      </div>
-      
-      <div v-if="analysisResult" class="results-card">
-        <div class="results-header">
-          <h2>Analysis Results</h2>
-          <div class="risk-score" :class="getRiskScoreClass(analysisResult.risk_score)">
-            {{ analysisResult.risk_score }}/100
-          </div>
-        </div>
-        
-        <div class="summary-card">
-          <p class="summary-text">{{ analysisResult.summary }}</p>
-          <div class="stats">
-            <div class="stat">
-              <span class="stat-number">{{ analysisResult.total_findings }}</span>
-              <span class="stat-label">Total Issues</span>
-            </div>
-          </div>
-        </div>
-        
-
-        
-        <div v-if="analysisResult.recommendations && analysisResult.recommendations.length > 0" class="recommendations-card">
-          <h3>🔧 Security Recommendations</h3>
-          <ul class="recommendations-list">
-            <li v-for="recommendation in analysisResult.recommendations" :key="recommendation" class="recommendation-item">
-              {{ recommendation }}
-            </li>
-          </ul>
-        </div>
-        
-
-        
-        <div class="findings-grid" v-if="analysisResult && analysisResult.findings_by_severity">
-          <template v-for="(findingsList, severity) in analysisResult.findings_by_severity" :key="severity">
-            <div v-if="Array.isArray(findingsList) && findingsList.length > 0" class="severity-card" :class="severity.toLowerCase()">
-              <div class="severity-header">
-                <span class="severity-badge">{{ getSeverityIcon(severity) }} {{ severity }}</span>
-                <span class="count">{{ findingsList.length }}</span>
-              </div>
-              <div class="findings-list">
-                <div v-for="finding in findingsList" :key="finding.description" class="finding-item">
-                  <div class="finding-header">
-                    <div class="finding-description">{{ finding.description }}</div>
-                    <div class="finding-category">{{ finding.category }}</div>
-                  </div>
-                  <div class="finding-details">
-                    <div class="finding-recommendation">
-                      <span class="icon">💡</span>
-                      <span class="label">Recommendation:</span>
-                      <span class="text">{{ finding.recommendation }}</span>
-                    </div>
-                    <div class="finding-component">
-                      <span class="icon">📍</span>
-                      <span class="label">Affected Component:</span>
-                      <span class="text">{{ finding.affected_component }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-        </div>
-
-      </div>
+      <UploadCard :isAnalyzing="isAnalyzing" @analyze="analyzeFile" ref="uploadCard" />
+      <ResultsCard v-if="analysisResult" :analysisResult="analysisResult" />
     </main>
   </div>
 </template>
 
 <script>
 import './styles.css'
-import { useFileUpload } from './composables/useFileUpload.js'
 import { useDarkMode } from './composables/useDarkMode.js'
 import { analysisService } from './services/analysisService.js'
+import UploadCard from './components/UploadCard.vue'
+import ResultsCard from './components/ResultsCard.vue'
 
 export default {
   name: 'App',
+  components: {
+    UploadCard,
+    ResultsCard
+  },
   setup() {
-    const { selectedFile, isDragOver, handleFileUpload, handleDrop } = useFileUpload()
     const { isDarkMode, toggleDarkMode } = useDarkMode()
     return {
-      selectedFile,
-      isDragOver,
-      handleFileUpload,
-      handleDrop,
       isDarkMode,
       toggleDarkMode
     }
@@ -124,16 +44,17 @@ export default {
   },
   methods: {
     async analyzeFile() {
-      if (!this.selectedFile) return
+      const selectedFile = this.$refs.uploadCard?.selectedFile
+      
+      if (!selectedFile) return
       
       this.isAnalyzing = true
-      console.log('Sending file:', this.selectedFile.name)
+      console.log('Sending file:', selectedFile.name)
       
       try {
-        const response = await analysisService.analyzeFile(this.selectedFile)
+        const response = await analysisService.analyzeFile(selectedFile)
         console.log('Full response:', response)
         
-        // Always use the report from response.report
         this.analysisResult = response.report
         
         console.log('Analysis result set:', this.analysisResult)
@@ -145,21 +66,8 @@ export default {
       } finally {
         this.isAnalyzing = false
       }
-    },
-    getRiskScoreClass(score) {
-      if (score >= 70) return 'high-risk'
-      if (score >= 40) return 'medium-risk'
-      return 'low-risk'
-    },
-    getSeverityIcon(severity) {
-      const icons = {
-        'CRITICAL': '🚨',
-        'HIGH': '⚠️',
-        'MEDIUM': '⚡',
-        'LOW': 'ℹ️'
-      }
-      return icons[severity] || '•'
     }
+
   }
 }
 </script>
