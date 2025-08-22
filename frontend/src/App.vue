@@ -97,61 +97,44 @@
 </template>
 
 <script>
-import axios from 'axios'
 import './styles.css'
+import { useFileUpload } from './composables/useFileUpload.js'
+import { useDarkMode } from './composables/useDarkMode.js'
+import { analysisService } from './services/analysisService.js'
 
 export default {
   name: 'App',
+  setup() {
+    const { selectedFile, isDragOver, handleFileUpload, handleDrop } = useFileUpload()
+    const { isDarkMode, toggleDarkMode } = useDarkMode()
+    return {
+      selectedFile,
+      isDragOver,
+      handleFileUpload,
+      handleDrop,
+      isDarkMode,
+      toggleDarkMode
+    }
+  },
   data() {
     return {
-      selectedFile: null,
       analysisResult: null,
-      isDarkMode: false,
-      isDragOver: false,
       isAnalyzing: false
     }
   },
-  mounted() {
-    this.isDarkMode = localStorage.getItem('darkMode') === 'true'
-  },
   methods: {
-    handleFileUpload(event) {
-      console.log('File upload triggered', event.target.files)
-      this.selectedFile = event.target.files[0]
-      console.log('Selected file:', this.selectedFile)
-    },
-    handleDrop(event) {
-      console.log('Drop event triggered', event.dataTransfer.files)
-      this.isDragOver = false
-      const files = event.dataTransfer.files
-      if (files.length > 0) {
-        this.selectedFile = files[0]
-        console.log('Selected file via drop:', this.selectedFile)
-      }
-    },
-    toggleDarkMode() {
-      this.isDarkMode = !this.isDarkMode
-      localStorage.setItem('darkMode', this.isDarkMode)
-    },
     async analyzeFile() {
       if (!this.selectedFile) return
       
       this.isAnalyzing = true
-      const formData = new FormData()
-      formData.append('file', this.selectedFile)
-      
       console.log('Sending file:', this.selectedFile.name)
       
       try {
-        const response = await axios.post('http://localhost:8001/analyze', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        console.log('Full response:', response.data)
+        const response = await analysisService.analyzeFile(this.selectedFile)
+        console.log('Full response:', response)
         
-        // Always use the report from response.data.report
-        this.analysisResult = response.data.report
+        // Always use the report from response.report
+        this.analysisResult = response.report
         
         console.log('Analysis result set:', this.analysisResult)
         console.log('Findings by severity:', this.analysisResult?.findings_by_severity)
