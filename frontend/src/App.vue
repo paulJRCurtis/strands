@@ -49,19 +49,19 @@ export default {
       if (!selectedFile) return
       
       this.isAnalyzing = true
-      console.log('Sending file:', selectedFile.name)
+      // console.log('Sending file:', selectedFile.name)
       
       try {
         const response = await analysisService.analyzeFile(selectedFile)
-        console.log('Full response:', response)
+        // console.log('Full response:', response)
         
         this.analysisResult = response.report
         
-        console.log('Analysis result set:', this.analysisResult)
-        console.log('Findings by severity:', this.analysisResult?.findings_by_severity)
+        // console.log('Analysis result set:', this.analysisResult)
+        // console.log('Findings by severity:', this.analysisResult?.findings_by_severity)
       } catch (error) {
-        console.error('Analysis failed:', error)
-        console.error('Error details:', error.response?.data)
+        // console.error('Analysis failed:', error)
+        // console.error('Error details:', error.response?.data)
         alert('Analysis failed: ' + (error.response?.data?.detail || error.message))
       } finally {
         this.isAnalyzing = false
