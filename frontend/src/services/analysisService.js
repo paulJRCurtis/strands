@@ -1,19 +1,43 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+// Robust API URL detection
+function getApiBaseUrl() {
+  // 1. Use explicit environment variable if set
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  
+  // 2. Use relative path if same origin (production)
+  if (window.location.hostname !== 'localhost') {
+    return window.location.origin
+  }
+  
+  // 3. Default to localhost for development
+  return 'http://localhost:8000'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 export const analysisService = {
   async analyzeFile(file) {
     const formData = new FormData()
     formData.append('file', file)
     
-    const response = await axios.post(`${API_BASE_URL}/analyze`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+    try {
+      const response = await axios.post(`${API_BASE_URL}/analyze`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 30000 // 30 second timeout
+      })
+      
+      return response.data
+    } catch (error) {
+      if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+        throw new Error('Backend service is not available. Please check if the coordinator is running.')
       }
-    })
-    
-    return response.data
+      throw error
+    }
   },
 
   async getJobStatus(jobId) {

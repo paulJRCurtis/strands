@@ -422,7 +422,7 @@ graph TD
 
 ```mermaid
 graph TB
-    subgraph "Docker Compose Stack"
+    subgraph "Production Environment"
         subgraph "Frontend Container"
             NGINX[Nginx Server]
             STATIC[Static Assets]
@@ -433,43 +433,84 @@ graph TB
             UVICORN[Uvicorn Server]
             AGENTS[Security Agents]
         end
+    end
+    
+    subgraph "Development Environment"
+        subgraph "Dev Frontend"
+            VITE[Vite Dev Server]
+            HOTRELOAD[Hot Reload]
+        end
         
-        subgraph "Shared Volumes"
-            LOGS[Log Volume]
-            TEMP[Temp Files]
+        subgraph "Dev Backend"
+            PYTHON[Python Direct]
+            VOLUMES[Volume Mounts]
         end
     end
     
+    subgraph "Test Environment"
+        TEST_COORD[Test Coordinator]
+        TEST_FRONTEND[Test Frontend]
+        E2E_TESTS[E2E Tests]
+        PLAYWRIGHT[Playwright]
+    end
+    
     NGINX --> FASTAPI
-    FASTAPI --> AGENTS
-    FASTAPI --> LOGS
-    FASTAPI --> TEMP
+    VITE --> PYTHON
+    TEST_COORD --> TEST_FRONTEND
+    TEST_FRONTEND --> E2E_TESTS
+    E2E_TESTS --> PLAYWRIGHT
     
     style NGINX fill:#1e3a8a,stroke:#1e40af,stroke-width:2px,color:#ffffff
     style FASTAPI fill:#1d4ed8,stroke:#1e40af,stroke-width:3px,color:#ffffff
-    style AGENTS fill:#2563eb,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    style VITE fill:#2563eb,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    style TEST_COORD fill:#3b82f6,stroke:#1e40af,stroke-width:2px,color:#ffffff
 ```
+
+### Docker Compose Configurations
+
+**Production (`docker-compose.prod.yml`)**
+- **Frontend**: Multi-stage build with Nginx serving optimized assets
+- **Backend**: Python application with production dependencies
+- **Networks**: Isolated bridge network for container communication
+- **Volumes**: Persistent storage for logs and temporary files
+
+**Development (`docker-compose.dev.yml`)**
+- **Frontend**: Live development server with hot reload
+- **Backend**: Volume-mounted source code for real-time changes
+- **Networks**: Development bridge network
+- **Features**: Code synchronization, debugging support
+
+**Test (`docker-compose.test.yml`)**
+- **Test Coordinator**: Isolated backend testing container
+- **Test Frontend**: Frontend unit and integration tests
+- **E2E Tests**: Playwright-based end-to-end testing
+- **Networks**: Isolated test network preventing interference
 
 ### Infrastructure Requirements
 
-**Minimum System Requirements**
-- CPU: 2 cores, 2.4 GHz
-- Memory: 4 GB RAM
-- Storage: 20 GB available space
-- Network: 100 Mbps bandwidth
+**Docker Host Requirements**
+- **CPU**: 2+ cores, 2.4 GHz minimum
+- **Memory**: 4 GB RAM minimum (8 GB recommended)
+- **Storage**: 20 GB available space
+- **Docker**: Version 20.10+ with Docker Compose 2.0+
+- **Network**: 100 Mbps bandwidth
 
-**Recommended Production Requirements**
-- CPU: 4 cores, 3.0 GHz
-- Memory: 8 GB RAM
-- Storage: 50 GB SSD
-- Network: 1 Gbps bandwidth
-- Load Balancer: Nginx or AWS ALB
+**Container Resource Allocation**
+- **Frontend Container**: 512 MB RAM, 0.5 CPU
+- **Backend Container**: 1 GB RAM, 1.0 CPU
+- **Test Containers**: 2 GB RAM, 1.0 CPU (temporary)
 
-**Scalability Considerations**
-- Horizontal scaling via container replication
-- Stateless application design
-- External cache integration (Redis)
-- Database clustering support
+**Production Scaling**
+- **Horizontal Scaling**: Multiple container instances
+- **Load Balancing**: Nginx reverse proxy
+- **Container Orchestration**: Docker Swarm or Kubernetes
+- **Health Checks**: Built-in container health monitoring
+
+**Volume Management**
+- **Source Code**: Development volume mounts
+- **Test Results**: Persistent test artifact storage
+- **Logs**: Centralized logging with volume persistence
+- **Temporary Files**: Ephemeral storage for analysis data
 
 ## Performance Specifications
 
@@ -568,6 +609,24 @@ graph TD
 - **Integration Tests**: API endpoints, agent coordination
 - **Performance Tests**: Load testing, stress testing
 - **Security Tests**: SAST, DAST, dependency scanning
+- **Containerized Tests**: Isolated test environment with Docker
+
+**Test Results Structure:**
+```
+test-results/                    # Backend results
+├── test-results.xml             # JUnit XML
+└── coverage.xml                 # Coverage XML
+
+frontend/test-results/           # Frontend results
+├── junit.xml                    # Unit test results
+├── coverage/                    # Coverage reports
+└── playwright-report/           # E2E reports
+```
+
+**Test Environments:**
+- **Local Testing**: Direct execution on host machine
+- **Containerized Testing**: Isolated Docker environment
+- **CI/CD Testing**: Jenkins pipeline integration
 
 ### Continuous Integration
 

@@ -6,9 +6,20 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'],
+    outputFile: {
+      junit: './test-results/junit.xml'
+    },
     coverage: {
+      reportsDirectory: './test-results/coverage',
       reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: ['node_modules/', 'dist/', '**/*.config.js', 'tests/e2e/']
+      exclude: [
+        'node_modules/',
+        'dist/',
+        '**/*.config.js',
+        '**/*.config.ts',
+        '**/tests/**',
+        '**/.eslintrc.cjs'
+      ]
     }
   }
 })

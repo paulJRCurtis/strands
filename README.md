@@ -24,11 +24,10 @@ npm run dev
 ### Production Mode
 ```bash
 # Using Docker Compose
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.prod.yml up --build
 
 # Or using start script
-chmod +x start.sh
-./start.sh
+./scripts/prod-start.sh
 ```
 
 ## Prerequisites
@@ -152,12 +151,13 @@ graph TB
 
 ```bash
 # Backend Tests
-pytest tests/ --cov=src --cov-report=xml
+pytest tests/ --junitxml=test-results/test-results.xml --cov=src --cov-report=xml:test-results/coverage.xml
 
 # Frontend Tests  
 cd frontend
 npm run test:coverage
 npm run lint
+npm run e2e
 ```
 
 **Test Coverage:**
@@ -165,15 +165,32 @@ npm run lint
 - Frontend: 20 tests covering components, services, and composables
 - Total: 36 tests with comprehensive coverage
 
+**Test Results Location:**
+- Backend: `test-results/` directory
+- Frontend: `frontend/test-results/` directory
+
 ## Deployment
 
 ### Docker Deployment
 ```bash
-# Build and run containers
+# Production Environment
+docker-compose -f docker-compose.prod.yml up --build
+
+# Development Environment  
 docker-compose -f docker-compose.dev.yml up --build
 
-# Scale services
-docker-compose -f docker-compose.dev.yml up --scale coordinator=2
+# Test Environment
+docker-compose -f docker-compose.test.yml run --rm test-coordinator
+
+# Or use convenience scripts
+./scripts/prod-start.sh      # Start production
+./scripts/prod-stop.sh       # Stop production
+./scripts/prod-uninstall.sh  # Completely remove production
+./scripts/dev-start.sh       # Start development
+./scripts/dev-stop.sh        # Stop development
+./scripts/dev-uninstall.sh   # Completely remove development
+./scripts/test-start.sh      # Run containerized tests
+./scripts/test-uninstall.sh  # Clean test environment
 ```
 
 ### CI/CD Pipeline
@@ -196,9 +213,15 @@ strands/
 │   │   ├── components/  # Vue.js components
 │   │   ├── composables/ # Reusable composition functions
 │   │   └── services/    # API service layer
-│   └── tests/          # Frontend tests
+│   ├── tests/          # Frontend tests
+│   └── test-results/   # Frontend test results
 ├── tests/              # Backend tests
+├── test-results/       # Backend test results
+├── scripts/            # Deployment and utility scripts
 ├── documentation/      # Project documentation
+├── docker-compose.dev.yml   # Development environment
+├── docker-compose.prod.yml  # Production environment
+├── docker-compose.test.yml  # Test environment
 └── Jenkinsfile        # CI/CD pipeline configuration
 ```
 

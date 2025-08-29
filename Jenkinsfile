@@ -39,7 +39,7 @@ pipeline {
                     sh 'pip install -r requirements-dev.txt'
                     
                     // Run backend tests
-                    sh 'pytest tests/ --junitxml=test-results.xml --cov=src --cov-report=xml'
+                    sh 'pytest tests/ --junitxml=test-results/test-results.xml --cov=src --cov-report=xml:test-results/coverage.xml'
                     
                     // Run frontend tests
                     dir('frontend') {
@@ -51,18 +51,18 @@ pipeline {
             }
             post {
                 always {
-                    publishTestResults testResultsPattern: 'test-results.xml'
-                    publishCoverage adapters: [coberturaAdapter('coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                    publishTestResults testResultsPattern: 'test-results/test-results.xml'
+                    publishCoverage adapters: [coberturaAdapter('test-results/coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                     
                     // Publish frontend test results
                     dir('frontend') {
-                        publishTestResults testResultsPattern: 'test-results.xml'
-                        publishCoverage adapters: [coberturaAdapter('coverage/cobertura-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                        publishTestResults testResultsPattern: 'test-results/junit.xml'
+                        publishCoverage adapters: [coberturaAdapter('test-results/coverage/cobertura-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                         publishHTML([
                             allowMissing: false,
                             alwaysLinkToLastBuild: true,
                             keepAll: true,
-                            reportDir: 'playwright-report',
+                            reportDir: 'test-results/playwright-report',
                             reportFiles: 'index.html',
                             reportName: 'Playwright E2E Report'
                         ])
@@ -159,6 +159,33 @@ pipeline {
                         sh "docker push ${DOCKER_IMAGE}:latest"
                     }
                     
+                    // Deploy to test environment
+                    echo 'Deploying to containerized test environment...'
+                    
+                    try {
+                        sh 'docker-compose -f docker-compose.test.yml run --rm test-coordinator'
+                    } catch (Exception e) {
+                        echo 'Backend tests failed - check test results for details'
+                        sh 'docker-compose -f docker-compose.test.yml logs test-coordinator || true'
+                        throw e
+                    }
+                    
+                    try {
+                        sh 'docker-compose -f docker-compose.test.yml run --rm test-frontend'
+                    } catch (Exception e) {
+                        echo 'Frontend tests failed - check test results for details'
+                        sh 'docker-compose -f docker-compose.test.yml logs test-frontend || true'
+                        throw e
+                    }
+                    
+                    try {
+                        sh 'docker-compose -f docker-compose.test.yml run --rm e2e-tests'
+                    } catch (Exception e) {
+                        echo 'E2E tests failed - check test results for details'
+                        sh 'docker-compose -f docker-compose.test.yml logs e2e-tests || true'
+                        throw e
+                    }
+                    
                     // Deploy to staging environment
                     if (env.BRANCH_NAME == 'develop') {
                         sh '''
@@ -167,6 +194,16 @@ pipeline {
                             kubectl rollout status deployment/strands-coordinator -n staging
                         '''
                     }
+                }
+            }
+            post {
+                always {
+                    // Archive containerized test results
+                    archiveArtifacts artifacts: 'test-results/**/*', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'frontend/test-results/**/*', allowEmptyArchive: true
+                    
+                    // Clean up test containers
+                    sh 'docker-compose -f docker-compose.test.yml down || true'
                 }
             }
         }
@@ -271,7 +308,7 @@ pipeline {
             sh "docker rmi ${DOCKER_IMAGE}:latest || true"
             
             // Archive artifacts
-            archiveArtifacts artifacts: '**/*-report.json, test-results.xml, coverage.xml', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/*-report.json, test-results/test-results.xml, test-results/coverage.xml', allowEmptyArchive: true
         }
         
         success {

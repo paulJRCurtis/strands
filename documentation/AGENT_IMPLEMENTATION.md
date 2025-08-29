@@ -301,6 +301,22 @@ async def test_agent_orchestration():
     assert results['confidence_score'] > 0.7
 ```
 
+### Test Results
+**Backend Results:** `test-results/`
+- `test-results.xml` - JUnit XML format
+- `coverage.xml` - Coverage report
+
+**Frontend Results:** `frontend/test-results/`
+- `junit.xml` - Unit test results
+- `coverage/` - Coverage reports (HTML, LCOV, Cobertura)
+- `playwright-report/` - E2E test reports
+
+### Containerized Testing
+**Test Environment:** `docker-compose.test.yml`
+- Isolated test containers for backend, frontend, and E2E tests
+- Automated test execution in CI/CD pipeline
+- Enhanced error reporting and result preservation
+
 ## Rollback Plan
 
 ### Gradual Migration

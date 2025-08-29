@@ -46,19 +46,26 @@ The tests integrate with your Jenkins pipeline:
 
 ## Test Structure
 ```
-frontend/
-├── src/
-│   ├── components/
-│   │   └── __tests__/
-│   │       └── FindingCard.test.js
-│   └── services/
-│       └── __tests__/
-│           └── analysisService.test.js
-├── tests/
-│   └── e2e/
-│       └── analysis.spec.js
-├── vitest.config.js
-└── playwright.config.js
+strands/
+├── test-results/              # Backend test results
+│   ├── test-results.xml       # JUnit XML
+│   └── coverage.xml           # Coverage report
+├── frontend/
+│   ├── src/
+│   │   ├── components/__tests__/
+│   │   └── services/__tests__/
+│   ├── tests/e2e/
+│   ├── test-results/          # Frontend test results
+│   │   ├── junit.xml          # Unit test results
+│   │   ├── coverage/          # Coverage reports
+│   │   └── playwright-report/ # E2E reports
+│   ├── vitest.config.js
+│   └── playwright.config.js
+├── tests/                     # Backend tests
+├── docker-compose.test.yml    # Containerized test environment
+└── scripts/
+    ├── test-start.sh          # Run containerized tests
+    └── test-uninstall.sh      # Clean test environment
 ```
 
 This comprehensive testing strategy ensures frontend reliability, user experience quality, and security validation.
