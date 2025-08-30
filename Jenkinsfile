@@ -1,5 +1,5 @@
 pipeline {
-    agent {label 'strands-jenkins-agent'}
+    agent { label 'strands-docker-agent' }
     
     environment {
         DOCKER_IMAGE = "strands-security-platform"
