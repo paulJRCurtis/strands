@@ -146,7 +146,7 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
+            // cleanWs()
             // Clean up Docker images
             // input message: 'Do you want to approve the cleanup of Docker images?', ok: 'Yes'
             sh "docker rmi ${DOCKER_IMAGE}-backend:${DOCKER_TAG} || true"
