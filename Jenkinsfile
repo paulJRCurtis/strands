@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "strands-security-platform"
         DOCKER_TAG = "${BUILD_NUMBER}"
-        DATADOG_API_KEY = credentials('datadog-api-key')
+        // DATADOG_API_KEY = credentials('datadog-api-key')
         
         // Environment-specific variables
         DEBUG = "${env.BRANCH_NAME == 'main' ? 'false' : 'true'}"
@@ -318,32 +318,34 @@ pipeline {
         
         success {
             // Send success notification to Datadog
-            sh '''
-                curl -X POST "https://api.datadoghq.com/api/v1/events" \
-                -H "Content-Type: application/json" \
-                -H "DD-API-KEY: ${DATADOG_API_KEY}" \
-                -d '{
-                    "title": "Pipeline Success",
-                    "text": "Strands Security Platform pipeline completed successfully",
-                    "tags": ["pipeline:jenkins", "status:success", "build:${BUILD_NUMBER}"],
-                    "alert_type": "success"
-                }'
-            '''
+            echo "Pipeline succeeded"
+            // sh '''
+            //     curl -X POST "https://api.datadoghq.com/api/v1/events" \
+            //     -H "Content-Type: application/json" \
+            //     -H "DD-API-KEY: ${DATADOG_API_KEY}" \
+            //     -d '{
+            //         "title": "Pipeline Success",
+            //         "text": "Strands Security Platform pipeline completed successfully",
+            //         "tags": ["pipeline:jenkins", "status:success", "build:${BUILD_NUMBER}"],
+            //         "alert_type": "success"
+            //     }'
+            // '''
         }
         
         failure {
             // Send failure notification to Datadog
-            sh '''
-                curl -X POST "https://api.datadoghq.com/api/v1/events" \
-                -H "Content-Type: application/json" \
-                -H "DD-API-KEY: ${DATADOG_API_KEY}" \
-                -d '{
-                    "title": "Pipeline Failure",
-                    "text": "Strands Security Platform pipeline failed at build ${BUILD_NUMBER}",
-                    "tags": ["pipeline:jenkins", "status:failure", "build:${BUILD_NUMBER}"],
-                    "alert_type": "error"
-                }'
-            '''
+            echo "Pipeline failed"
+            // sh '''
+            //     curl -X POST "https://api.datadoghq.com/api/v1/events" \
+            //     -H "Content-Type: application/json" \
+            //     -H "DD-API-KEY: ${DATADOG_API_KEY}" \
+            //     -d '{
+            //         "title": "Pipeline Failure",
+            //         "text": "Strands Security Platform pipeline failed at build ${BUILD_NUMBER}",
+            //         "tags": ["pipeline:jenkins", "status:failure", "build:${BUILD_NUMBER}"],
+            //         "alert_type": "error"
+            //     }'
+            // '''
         }
     }
 }
