@@ -1,14 +1,27 @@
 pipeline {
-    agent any
+    agent {label 'strands-jenkins-agent'}
     
     environment {
         DOCKER_IMAGE = "strands-security-platform"
         DOCKER_TAG = "${BUILD_NUMBER}"
-        OCTOPUS_PROJECT = "SecurityAnalysisPlatform"
         DATADOG_API_KEY = credentials('datadog-api-key')
+        
+        // Environment-specific variables
+        DEBUG = "${env.BRANCH_NAME == 'main' ? 'false' : 'true'}"
+        LOG_LEVEL = "${env.BRANCH_NAME == 'main' ? 'INFO' : 'DEBUG'}"
+        NODE_ENV = "${env.BRANCH_NAME == 'main' ? 'production' : 'development'}"
+        API_BASE_URL = "http://coordinator:8000"
+        FRONTEND_URL = "http://frontend:3000"
+        CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000"
     }
     
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
         stage('Build') {
             steps {
                 script {
@@ -186,13 +199,13 @@ pipeline {
                         throw e
                     }
                     
-                    // Deploy to staging environment
+                    // Deploy based on branch
                     if (env.BRANCH_NAME == 'develop') {
-                        sh '''
-                            kubectl set image deployment/strands-coordinator coordinator=${DOCKER_IMAGE}:${DOCKER_TAG} -n staging
-                            kubectl set image deployment/strands-frontend frontend=${DOCKER_IMAGE}:${DOCKER_TAG} -n staging
-                            kubectl rollout status deployment/strands-coordinator -n staging
-                        '''
+                        echo 'Deploying to staging environment...'
+                        sh 'docker-compose -f docker-compose.dev.yml up -d'
+                    } else if (env.BRANCH_NAME == 'main') {
+                        echo 'Deploying to production environment...'
+                        sh 'docker-compose -f docker-compose.prod.yml up -d'
                     }
                 }
             }
@@ -208,35 +221,27 @@ pipeline {
             }
         }
         
-        stage('Release') {
+        stage('Health Check') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                }
             }
             steps {
                 script {
-                    echo 'Creating Octopus Deploy release...'
+                    echo 'Performing health checks...'
                     
-                    withCredentials([string(credentialsId: 'octopus-api-key', variable: 'OCTOPUS_API_KEY')]) {
-                        sh '''
-                            # Create Octopus release
-                            octo create-release \
-                                --project="${OCTOPUS_PROJECT}" \
-                                --version="${BUILD_NUMBER}" \
-                                --server="${OCTOPUS_SERVER}" \
-                                --apiKey="${OCTOPUS_API_KEY}" \
-                                --packageVersion="${DOCKER_TAG}" \
-                                --releaseNotes="Build ${BUILD_NUMBER} - ${GIT_COMMIT}"
-                            
-                            # Deploy to production
-                            octo deploy-release \
-                                --project="${OCTOPUS_PROJECT}" \
-                                --version="${BUILD_NUMBER}" \
-                                --deployTo="Production" \
-                                --server="${OCTOPUS_SERVER}" \
-                                --apiKey="${OCTOPUS_API_KEY}" \
-                                --waitForDeployment
-                        '''
-                    }
+                    sh '''
+                        # Wait for containers to be ready
+                        sleep 30
+                        
+                        # Health check for backend
+                        curl -f http://localhost:8000/health || exit 1
+                        
+                        # Health check for frontend
+                        curl -f http://localhost:3000 || exit 1
+                    '''
                 }
             }
         }
@@ -265,7 +270,7 @@ pipeline {
                         sleep 30
                         
                         # Health check
-                        curl -f https://strands.company.com/health || exit 1
+                        curl -f http://localhost:8000/health || exit 1
                         
                         # Create Datadog synthetic test
                         curl -X POST "https://api.datadoghq.com/api/v1/synthetics/tests" \
@@ -280,7 +285,7 @@ pipeline {
                             "config": {
                                 "request": {
                                     "method": "GET",
-                                    "url": "https://strands.company.com/health"
+                                    "url": "http://localhost:8000/health"
                                 },
                                 "assertions": [
                                     {

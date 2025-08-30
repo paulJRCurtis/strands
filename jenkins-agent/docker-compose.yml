@@ -1,0 +1,104 @@
+# Jenkins Agent Docker Compose V2 Configuration
+# This file sets up a Jenkins agent with all required tools and proper
+# volume mounts for the Strands Security Analysis Platform pipeline.
+
+services:
+  jenkins-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: strands-jenkins-agent:latest
+    container_name: strands-jenkins-agent
+    
+    environment:
+      # Jenkins connection settings
+      # JENKINS_URL should point to your Jenkins controller. If running on host, use host IP or host.docker.internal
+      - JENKINS_URL=http://host.docker.internal:8080
+      - JENKINS_SECRET=bdb0525d9a6bb8ac82871c3c31b725fd56706341476761dffa6e7f78c6d4bebe
+      - JENKINS_AGENT_NAME=strands-docker-agent
+      - JENKINS_AGENT_WORKDIR=/home/jenkins/agent
+      
+      # Docker settings
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      
+      # Application settings
+      - PYTHONPATH=/home/jenkins/agent
+      - NODE_ENV=${NODE_ENV:-production}
+    
+    volumes:
+      # WARNING: Mounting Docker socket provides full Docker daemon access
+      # This is required for Docker-in-Docker builds but creates security risks
+      # Consider using rootless Docker or Docker-in-Docker alternatives for production
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+      # Optional: Docker binary (if not in image)
+      - /usr/bin/.docker:/usr/bin/.docker:ro
+      
+      # Workspace persistence
+      - jenkins-workspace:/home/jenkins/agent
+      
+      # Optional: Cache directories for faster builds
+      - npm-cache:/home/jenkins/.npm
+      - pip-cache:/home/jenkins/.cache/pip
+    
+    networks:
+      - jenkins-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2'
+        reservations:
+          memory: 2G
+          cpus: '1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "jenkins"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Depends on Jenkins master (if running in same compose)
+  # depends_on:
+  #   - jenkins
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+  # Optional: Jenkins master service (commented out, controller already running)
+  # jenkins:
+  #   image: jenkins/jenkins:lts
+  #   container_name: jenkins-master
+  #   ports:
+  #     - "8080:8080"
+  #     - "50000:50000"
+  #   volumes:
+  #     - jenkins-data:/var/jenkins_home
+  #   networks:
+  #     - jenkins-network
+  #   environment:
+  #     - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+  #   restart: unless-stopped
+
+volumes:
+  jenkins-workspace:
+    driver: local
+  jenkins-data:
+    driver: local
+  npm-cache:
+    driver: local
+  pip-cache:
+    driver: local
+
+networks:
+  jenkins-network:
+    driver: bridge
+    name: jenkins-network

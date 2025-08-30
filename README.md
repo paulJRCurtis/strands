@@ -5,7 +5,12 @@ A distributed web application that leverages multiple AI agents to analyze softw
 ## Quick Start
 
 ### Development Mode
+Run the scripts/dev-start.sh or the below. 
+
 ```bash
+# Set environment variables (optional)
+source scripts/set-env.sh
+
 # Backend (Terminal 1)
 cd /path/to/strands
 python -m src.coordinator.main

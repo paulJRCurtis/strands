@@ -1,6 +1,8 @@
 services:
   test-coordinator:
-    build: .
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       - PYTHONPATH=/app
       - NODE_ENV=test

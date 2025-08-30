@@ -1,10 +1,17 @@
 services:
   coordinator:
-    build: .
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
     environment:
       - PYTHONPATH=/app
+      - DEBUG=${DEBUG:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - NODE_ENV=${NODE_ENV:-production}
+      - API_BASE_URL=${API_BASE_URL:-http://coordinator:8000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
     volumes:
       - ./src:/app/src
     networks:
@@ -17,7 +24,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
+      - API_BASE_URL=${API_BASE_URL:-http://coordinator:8000}
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend:3000}
     depends_on:
       - coordinator
     networks:
