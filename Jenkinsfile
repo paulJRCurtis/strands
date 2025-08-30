@@ -148,7 +148,7 @@ pipeline {
                     archiveArtifacts artifacts: '*-report.json, frontend/axe-report.json', allowEmptyArchive: true
                 }
             }
-}
+        }
         stage('Deploy') {
             when {
                 anyOf {
@@ -156,6 +156,7 @@ pipeline {
                     branch 'develop'
                 }
             }
+            steps {
                 script {
                     echo 'Deploying application...'
                     // Push backend and frontend Docker images to registry
