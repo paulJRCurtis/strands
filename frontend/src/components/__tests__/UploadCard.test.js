@@ -33,6 +33,7 @@ describe('UploadCard', () => {
       writable: false
     })
     await input.trigger('change')
+    await wrapper.vm.$nextTick()
 
     const button = wrapper.find('button')
     await button.trigger('click')
@@ -52,7 +53,8 @@ describe('UploadCard', () => {
       writable: false
     })
 
-    await input.trigger('change')
-    expect(wrapper.vm.selectedFile).toBe(file)
+  await input.trigger('change')
+  await wrapper.vm.$nextTick()
+  expect(wrapper.vm.$.exposed.selectedFile.value).toBe(file)
   })
 })
