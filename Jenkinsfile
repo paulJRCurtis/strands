@@ -20,8 +20,7 @@ pipeline {
             steps {
                 checkout scm
             }
-        }
-        
+        }    
         stage('Build') {
             steps {
                 script {
@@ -36,13 +35,16 @@ pipeline {
                         sh 'npm run build'
                     }
                     
-                    // Build Docker image
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                    sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                    // Build backend Docker image
+                    sh "docker build -t ${DOCKER_IMAGE}-backend:${DOCKER_TAG} -f backend/Dockerfile ."
+                    sh "docker tag ${DOCKER_IMAGE}-backend:${DOCKER_TAG} ${DOCKER_IMAGE}-backend:latest"
+
+                    // Build frontend Docker image
+                    sh "docker build -t ${DOCKER_IMAGE}-frontend:${DOCKER_TAG} -f frontend/Dockerfile frontend"
+                    sh "docker tag ${DOCKER_IMAGE}-frontend:${DOCKER_TAG} ${DOCKER_IMAGE}-frontend:latest"
                 }
             }
         }
-        
         stage('Test') {
             steps {
                 script {
@@ -82,7 +84,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Code Quality') {
             steps {
                 script {
@@ -106,17 +107,13 @@ pipeline {
                 }
             }
         }
-        
         stage('Security') {
             parallel {
                 stage('SAST Scan') {
                     steps {
                         script {
-                            echo 'Running SAST security scan...'
-                            
                             // Bandit for Python security
                             sh 'bandit -r src/ -f json -o bandit-report.json || true'
-                            
                             // npm audit for frontend
                             dir('frontend') {
                                 sh 'npm audit --audit-level=moderate --json > npm-audit.json || true'
@@ -129,9 +126,10 @@ pipeline {
                     steps {
                         script {
                             echo 'Scanning Docker image for vulnerabilities...'
-                            
-                            // Trivy container scan
-                            sh "trivy image --format json --output trivy-report.json ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                            // Trivy container scan for backend
+                            sh "trivy image --format json --output trivy-backend-report.json ${DOCKER_IMAGE}-backend:${DOCKER_TAG}"
+                            // Trivy container scan for frontend
+                            sh "trivy image --format json --output trivy-frontend-report.json ${DOCKER_IMAGE}-frontend:${DOCKER_TAG}"
                         }
                     }
                 }
@@ -139,9 +137,8 @@ pipeline {
                     steps {
                         script {
                             echo 'Checking dependencies for vulnerabilities...'
-                            
                             // OWASP Dependency Check
-                            sh 'dependency-check --project "Strands Security Platform" --scan . --format JSON --out dependency-check-report.json'
+                            sh 'dependency-check --project \"Strands Security Platform\" --scan . --format JSON --out dependency-check-report.json'
                         }
                     }
                 }
@@ -151,8 +148,7 @@ pipeline {
                     archiveArtifacts artifacts: '*-report.json, frontend/axe-report.json', allowEmptyArchive: true
                 }
             }
-        }
-        
+}
         stage('Deploy') {
             when {
                 anyOf {
@@ -160,20 +156,18 @@ pipeline {
                     branch 'develop'
                 }
             }
-            steps {
                 script {
                     echo 'Deploying application...'
-                    
-                    // Push Docker image to registry
+                    // Push backend and frontend Docker images to registry
                     withCredentials([usernamePassword(credentialsId: 'docker-registry', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                        sh "docker push ${DOCKER_IMAGE}:latest"
+                        sh "docker push ${DOCKER_IMAGE}-backend:${DOCKER_TAG}"
+                        sh "docker push ${DOCKER_IMAGE}-backend:latest"
+                        sh "docker push ${DOCKER_IMAGE}-frontend:${DOCKER_TAG}"
+                        sh "docker push ${DOCKER_IMAGE}-frontend:latest"
                     }
-                    
                     // Deploy to test environment
                     echo 'Deploying to containerized test environment...'
-                    
                     try {
                         sh 'docker-compose -f docker-compose.test.yml run --rm test-coordinator'
                     } catch (Exception e) {
@@ -181,7 +175,6 @@ pipeline {
                         sh 'docker-compose -f docker-compose.test.yml logs test-coordinator || true'
                         throw e
                     }
-                    
                     try {
                         sh 'docker-compose -f docker-compose.test.yml run --rm test-frontend'
                     } catch (Exception e) {
@@ -189,7 +182,6 @@ pipeline {
                         sh 'docker-compose -f docker-compose.test.yml logs test-frontend || true'
                         throw e
                     }
-                    
                     try {
                         sh 'docker-compose -f docker-compose.test.yml run --rm e2e-tests'
                     } catch (Exception e) {
@@ -197,7 +189,6 @@ pipeline {
                         sh 'docker-compose -f docker-compose.test.yml logs e2e-tests || true'
                         throw e
                     }
-                    
                     // Deploy based on branch
                     if (env.BRANCH_NAME == 'develop') {
                         echo 'Deploying to staging environment...'
@@ -213,13 +204,11 @@ pipeline {
                     // Archive containerized test results
                     archiveArtifacts artifacts: 'test-results/**/*', allowEmptyArchive: true
                     archiveArtifacts artifacts: 'frontend/test-results/**/*', allowEmptyArchive: true
-                    
                     // Clean up test containers
                     sh 'docker-compose -f docker-compose.test.yml down || true'
                 }
             }
         }
-        
         stage('Health Check') {
             when {
                 anyOf {
@@ -308,9 +297,10 @@ pipeline {
     post {
         always {
             // Clean up Docker images
-            sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
-            sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-            
+            sh "docker rmi ${DOCKER_IMAGE}-backend:${DOCKER_TAG} || true"
+            sh "docker rmi ${DOCKER_IMAGE}-backend:latest || true"
+            sh "docker rmi ${DOCKER_IMAGE}-frontend:${DOCKER_TAG} || true"
+            sh "docker rmi ${DOCKER_IMAGE}-frontend:latest || true"
             // Archive artifacts
             archiveArtifacts artifacts: '**/*-report.json, test-results/test-results.xml, test-results/coverage.xml', allowEmptyArchive: true
         }
