@@ -28,7 +28,7 @@ pipeline {
                     echo 'Building application artifacts...'
                     
                     // Install Python dependencies
-                    sh 'pip install -r requirements.txt'
+                    sh 'pip install -r requirements.txt --break-system-packages'
                     
                     // Build frontend
                     dir('frontend') {
