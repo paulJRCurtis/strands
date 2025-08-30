@@ -25,10 +25,14 @@ describe('UploadCard', () => {
       props: { isAnalyzing: false }
     })
 
-    // Set a file to enable the button
+    // Simulate file selection via input
     const file = new File(['test'], 'test.json', { type: 'application/json' })
-    wrapper.vm.selectedFile = file
-    await wrapper.vm.$nextTick()
+    const input = wrapper.find('input[type="file"]')
+    Object.defineProperty(input.element, 'files', {
+      value: [file],
+      writable: false
+    })
+    await input.trigger('change')
 
     const button = wrapper.find('button')
     await button.trigger('click')
