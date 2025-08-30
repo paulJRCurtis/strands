@@ -59,6 +59,7 @@ pipeline {
             post {
                 always {
                     echo 'Publishing test results and coverage reports...'
+                    junit 'test-results/backend-test-results.xml' // Path to your JUnit XML files
                     // publishTestResults testResultsPattern: 'test-results/backend-test-results.xml'
                     // publishCoverage adapters: [coberturaAdapter('test-results/backend-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
 
