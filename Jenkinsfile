@@ -1,5 +1,8 @@
 pipeline {
     agent { label 'strands-docker-agent' }
+    options {
+        buildDiscarder logRotator(artifactDaysToKeepStr: '5', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
+    }
     environment {
         DOCKER_IMAGE = "strands-security-platform"
         DOCKER_TAG = "${BUILD_NUMBER}"
