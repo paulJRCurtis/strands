@@ -62,7 +62,7 @@ pipeline {
                     junit 'test-results/*.xml'
                     // junit 'test-results/backend-coverage.xml'
                     recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
-                         tools: [[parser: 'JUNIT', pattern: '/test-results/**-coverage.xml']]
+                         tools: [[parser: 'JUNIT', pattern: 'test-results/backend-coverage.xml']]
                     // recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
                     //      tools: [[parser: 'JUNIT']]
                     // publishTestResults testResultsPattern: 'test-results/backend-test-results.xml'
