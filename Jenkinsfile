@@ -49,8 +49,7 @@ pipeline {
                     echo 'Running tests...'
                     
                     // Install test dependencies
-                    sh 'pip install -r requirements-dev.txt'
-                    
+                    sh 'pip install -r requirements-dev.txt --break-system-packages'
                     // Run backend tests
                     sh 'pytest tests/ --junitxml=test-results/test-results.xml --cov=src --cov-report=xml:test-results/coverage.xml'
                     
