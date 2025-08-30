@@ -35,7 +35,13 @@ describe('UploadCard', () => {
     await input.trigger('change')
     await wrapper.vm.$nextTick()
 
+    // Check that the file is set
+    expect(wrapper.vm.$.exposed.selectedFile.value).toBe(file)
+
     const button = wrapper.find('button')
+    // Check that the button is enabled
+    expect(button.element.disabled).toBe(false)
+
     await button.trigger('click')
     expect(wrapper.emitted()).toHaveProperty('analyze')
   })
