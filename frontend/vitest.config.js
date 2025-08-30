@@ -10,7 +10,7 @@ export default defineConfig({
       junit: './test-results/junit.xml'
     },
     coverage: {
-      reportsDirectory: './test-results/coverage',
+      reportsDirectory: './test-results/frontend-coverage',
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
@@ -18,7 +18,8 @@ export default defineConfig({
         '**/*.config.js',
         '**/*.config.ts',
         '**/tests/**',
-        '**/.eslintrc.cjs'
+        '**/.eslintrc.cjs',
+        '**/test-results/**'
       ]
     }
   }
