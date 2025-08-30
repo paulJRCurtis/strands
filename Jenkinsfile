@@ -18,8 +18,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                cleanWs() // Cleans the workspace
-                checkout scm
+                git branch: 'main', url: 'https://github.com/paulJRCurtis/strands.git'
             }
         }    
         stage('Build') {
