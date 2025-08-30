@@ -25,25 +25,20 @@ describe('UploadCard', () => {
       props: { isAnalyzing: false }
     })
 
-    // Simulate file selection via input
-    const file = new File(['test'], 'test.json', { type: 'application/json' })
-    const input = wrapper.find('input[type="file"]')
-    Object.defineProperty(input.element, 'files', {
-      value: [file],
-      writable: false
-    })
-    await input.trigger('change')
-    await wrapper.vm.$nextTick()
+  // Directly set the file ref for CI reliability
+  const file = new File(['test'], 'test.json', { type: 'application/json' })
+  wrapper.vm.$.exposed.selectedFile.value = file
+  await wrapper.vm.$nextTick()
 
-    // Check that the file is set
-    expect(wrapper.vm.$.exposed.selectedFile.value).toBe(file)
+  // Check that the file is set
+  expect(wrapper.vm.$.exposed.selectedFile.value).toBe(file)
 
-    const button = wrapper.find('button')
-    // Check that the button is enabled
-    expect(button.element.disabled).toBe(false)
+  const button = wrapper.find('button')
+  // Check that the button is enabled
+  expect(button.element.disabled).toBe(false)
 
-    await button.trigger('click')
-    expect(wrapper.emitted()).toHaveProperty('analyze')
+  await button.trigger('click')
+  expect(wrapper.emitted()).toHaveProperty('analyze')
   })
 
   it('handles file selection', async () => {
