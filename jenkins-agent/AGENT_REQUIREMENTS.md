@@ -1,3 +1,18 @@
+## Docker Permissions
+
+Ensure the user running Jenkins agent or local builds has permission to access the Docker daemon. This can be done by adding the user to the `docker` group:
+
+```sh
+sudo usermod -aG docker $USER
+```
+
+After running this command, log out and log back in, or run:
+
+```sh
+newgrp docker
+```
+
+This is required to build Docker images without encountering permission errors.
 # Jenkins Docker Agent Requirements for Strands Pipeline
 
 ## Overview

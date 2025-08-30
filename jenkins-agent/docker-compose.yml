@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile
     image: strands-jenkins-agent:latest
     container_name: strands-jenkins-agent
+    user: root
     
     environment:
       # Jenkins connection settings
