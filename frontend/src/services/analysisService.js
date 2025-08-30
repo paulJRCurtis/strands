@@ -1,34 +1,16 @@
 import axios from 'axios'
 
-// Robust API URL detection
-function getApiBaseUrl() {
-  // 1. Use explicit environment variable if set
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL
-  }
-  
-  // 2. Use relative path if same origin (production)
-  if (window.location.hostname !== 'localhost') {
-    return window.location.origin
-  }
-  
-  // 3. Default to localhost for development
-  return 'http://localhost:8000'
-}
-
-const API_BASE_URL = getApiBaseUrl()
-
 export const analysisService = {
   async analyzeFile(file) {
     const formData = new FormData()
     formData.append('file', file)
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/analyze`, formData, {
+      const response = await axios.post('/api/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        timeout: 30000 // 30 second timeout
+        timeout: 30000
       })
       
       return response.data
@@ -41,7 +23,7 @@ export const analysisService = {
   },
 
   async getJobStatus(jobId) {
-    const response = await axios.get(`${API_BASE_URL}/status/${jobId}`)
+    const response = await axios.get(`/api/status/${jobId}`)
     return response.data
   }
 }
