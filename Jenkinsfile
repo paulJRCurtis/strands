@@ -59,8 +59,10 @@ pipeline {
             post {
                 always {
                     echo 'Publishing test results and coverage reports...'
-                    // junit 'test-results/*.xml'
-                    junit 'test-results/backend-coverage.xml'
+                    junit 'test-results/*.xml'
+                    // junit 'test-results/backend-coverage.xml'
+                    recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
+                         tools: [[parser: 'JUNIT', pattern: 'test-results/backend-coverage.xml']]
                     // publishTestResults testResultsPattern: 'test-results/backend-test-results.xml'
                     // publishCoverage adapters: [coberturaAdapter('test-results/backend-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
 
