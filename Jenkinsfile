@@ -46,7 +46,7 @@ pipeline {
                     // Install test dependencies
                     sh 'pip install -r requirements-dev.txt --break-system-packages'
                     // Run backend tests
-                    // sh 'pytest tests/ --junitxml=test-results/backend-test-results.xml --cov=src --cov-report=xml:test-results/backend-coverage.xml'
+                    sh 'pytest tests/ --junitxml=test-results/backend-test-results.xml --cov=src --cov-report=xml:test-results/backend-coverage.xml'
                     
                     // Run frontend tests
                     // dir('frontend') {
