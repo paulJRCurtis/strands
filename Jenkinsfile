@@ -52,7 +52,7 @@ pipeline {
                     dir('frontend') {
                         sh 'npm run test:coverage'
                         // sh 'cp test-results/junit.xml ../test-results/frontend-results.xml'
-                        sh 'cp coverage/cobertura-coverage.xml ../test-results/frontend-coverage.xml'
+                        sh 'cp test-results/cobertura-coverage.xml ../test-results/frontend-coverage.xml'
                         sh 'npm run lint'
                     }
                 }
