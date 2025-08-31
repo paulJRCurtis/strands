@@ -51,6 +51,7 @@ pipeline {
                     // Run frontend tests
                     dir('frontend') {
                         sh 'npm run test:coverage'
+                        // ************ npm run test:coverage is not producing a junit.xml file *********
                         // sh 'cp test-results/junit.xml ../test-results/frontend-results.xml'
                         sh 'cp test-results/cobertura-coverage.xml ../test-results/frontend-coverage.xml'
                         sh 'npm run lint'
@@ -134,7 +135,7 @@ pipeline {
                         script {
                             echo 'Checking dependencies for vulnerabilities...'
                             // OWASP Dependency Check
-                            sh 'dependency-check --project \"Strands Security Platform\" --scan . --format JSON --out dependency-check-report.json'
+                            sh 'docker run --rm -v $(pwd):/src owasp/dependency-check --project "Strands Security Platform" --scan /src --format JSON --out /src/dependency-check-report.json'
                         }
                     }
                 }
