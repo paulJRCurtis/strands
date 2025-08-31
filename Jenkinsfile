@@ -49,7 +49,7 @@ pipeline {
                     sh 'coverage run -m pytest --junitxml=test-results.xml'
                     sh 'coverage xml -o coverage.xml'
                     
-                    Run frontend tests
+                    // Run frontend tests
                     dir('frontend') {
                         sh 'npm run test:coverage'
                         sh 'npm run lint'
