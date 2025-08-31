@@ -65,8 +65,8 @@ pipeline {
                     // recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
 
                     // Publish frontend test results
-                    // dir('frontend') 
-                    //     junit 'test-results/junit.xml'
+                    dir('frontend') {
+                        junit 'test-results/junit.xml'
                         // publishCoverage adapters: [coberturaAdapter('test-results/coverage/cobertura-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                         // publishHTML([
                         //     allowMissing: false,
@@ -76,7 +76,7 @@ pipeline {
                         //     reportFiles: 'index.html',
                         //     reportName: 'Playwright E2E Report'
                         // ])
-                    // }
+                    }
                 }
             }
 
