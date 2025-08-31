@@ -46,15 +46,14 @@ pipeline {
                     // Install test dependencies
                     sh 'pip install -r requirements-dev.txt --break-system-packages'
                     // Run backend tests
-                    // sh 'pytest tests/ --junitxml=test-results/backend-test-results.xml --cov=src --cov-report=xml:test-results/backend-coverage.xml'
                     sh 'coverage run -m pytest --junitxml=test-results.xml'
                     sh 'coverage xml -o coverage.xml'
                     
-                    // Run frontend tests
-                    // dir('frontend') {
-                    //     sh 'npm run test:coverage'
-                    //     sh 'npm run lint'
-                    // }
+                    Run frontend tests
+                    dir('frontend') {
+                        sh 'npm run test:coverage'
+                        sh 'npm run lint'
+                    }
                 }
             }
 
@@ -62,15 +61,12 @@ pipeline {
                 always {
                     echo 'Publishing test results and coverage reports...'
                     junit 'test-results/*.xml'
-                    // junit 'test-results/backend-coverage.xml'
-                    recordCoverage tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']]                    // recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
-                    //      tools: [[parser: 'JUNIT']]
-                    // publishTestResults testResultsPattern: 'test-results/backend-test-results.xml'
-                    // publishCoverage adapters: [coberturaAdapter('test-results/backend-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                    recordCoverage tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']]
+                    // recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
 
                     // Publish frontend test results
                     dir('frontend') {
-                        // publishTestResults testResultsPattern: 'test-results/junit.xml'
+                        junit 'test-results/junit.xml'
                         // publishCoverage adapters: [coberturaAdapter('test-results/coverage/cobertura-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                         // publishHTML([
                         //     allowMissing: false,
