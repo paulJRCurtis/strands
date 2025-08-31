@@ -60,6 +60,8 @@ pipeline {
             post {
                 always {
                     echo 'Publishing test results and coverage reports...'
+                    junit 'test-results/*.xml'
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']])
                     // Publish frontend test results
                     dir('frontend') {
                         junit 'test-results/junit.xml'
