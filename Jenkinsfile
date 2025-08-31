@@ -61,12 +61,12 @@ pipeline {
                 always {
                     echo 'Publishing test results and coverage reports...'
                     junit 'test-results/*.xml'
-                    recordCoverage tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']]
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']])
                     // recordCoverage qualityGates: [[criticality: 'NOTE', integerThreshold: 80, metric: 'MODULE', threshold: 80.0]],
 
                     // Publish frontend test results
                     dir('frontend') {
-                        junit 'test-results/junit.xml'
+                    //     junit 'test-results/junit.xml'
                         // publishCoverage adapters: [coberturaAdapter('test-results/coverage/cobertura-coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                         // publishHTML([
                         //     allowMissing: false,
