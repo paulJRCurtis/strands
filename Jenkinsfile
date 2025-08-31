@@ -46,8 +46,8 @@ pipeline {
                     // Install test dependencies
                     sh 'pip install -r requirements-dev.txt --break-system-packages'
                     // Run backend tests
-                    sh 'coverage run -m pytest --junitxml=/test-results/backend-results.xml'
-                    sh 'coverage xml -o /test-results/backend-coverage.xml'
+                    sh 'coverage run -m pytest --junitxml=test-results/backend-results.xml'
+                    sh 'coverage xml -o test-results/backend-coverage.xml'
                     // Run frontend tests
                     dir('frontend') {
                         sh 'npm run test:coverage'
@@ -60,7 +60,7 @@ pipeline {
             post {
                 always {
                     echo 'Publishing test results and coverage reports...'
-                    junit 'test-results/*-test-results.xml'
+                    junit 'test-results/*-results.xml'
                     recordCoverage(tools: [
                         [parser: 'COBERTURA', pattern: 'test-results/backend-coverage.xml'],
                         [parser: 'COBERTURA', pattern: 'test-results/frontend-coverage.xml']
