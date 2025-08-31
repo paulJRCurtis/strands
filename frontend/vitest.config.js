@@ -5,7 +5,12 @@ export default defineConfig({
   plugins: [vue()],
   test: {
     environment: 'jsdom',
-    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'],
+    exclude: [
+      '**/user.lib.python/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/tests/e2e/**'
+    ],
     outputFile: {
       junit: './test-results/junit.xml'
     },
@@ -13,6 +18,7 @@ export default defineConfig({
       reportsDirectory: './test-results',
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
+        '**/user.lib.python/**',
         'node_modules/',
         'dist/',
         '**/*.config.js',
