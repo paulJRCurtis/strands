@@ -46,12 +46,12 @@ pipeline {
                     // Install test dependencies
                     sh 'pip install -r requirements-dev.txt --break-system-packages'
                     // Run backend tests
-                    sh 'coverage run -m pytest --junitxml=backend-test-results.xml'
-                    sh 'coverage xml -o backend-coverage.xml'            
+                    sh 'coverage run -m pytest --junitxml=/test-results/backend-results.xml'
+                    sh 'coverage xml -o /test-results/backend-coverage.xml'
                     // Run frontend tests
                     dir('frontend') {
                         sh 'npm run test:coverage'
-                        sh 'cp test-results/junit.xml ../test-results/frontend-test-results.xml'
+                        sh 'cp test-results/junit.xml ../test-results/frontend-results.xml'
                         sh 'cp coverage/cobertura-coverage.xml ../test-results/frontend-coverage.xml'
                         sh 'npm run lint'
                     }
