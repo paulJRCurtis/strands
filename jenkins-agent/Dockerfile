@@ -35,12 +35,16 @@ RUN pip3 install --no-cache-dir \
     bandit \
     coverage --break-system-packages
 
+# Add to OWASP Dependency Check
+RUN apt-get update && \
+    apt-get install -y wget unzip && \
+    wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.zip && \
+    unzip dependency-check-8.4.0-release.zip -d /opt && \
+    ln -s /opt/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check
+
+
 # Install Trivy security scanner
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-
-# # Copy verification script into agent workspace
-# COPY verify-agent.sh /home/jenkins/agent/verify-agent.sh
-# RUN chmod +x /home/jenkins/agent/verify-agent.sh
 
 # Install SonarQube scanner
 RUN wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip \
@@ -57,6 +61,7 @@ RUN mkdir -p /home/jenkins/agent && chown jenkins:jenkins /home/jenkins/agent
 # Copy verification script into agent workspace
 COPY verify-agent.sh /home/jenkins/agent/verify-agent.sh
 RUN chmod +x /home/jenkins/agent/verify-agent.sh
+
 # Switch back to jenkins user
 USER jenkins
 
