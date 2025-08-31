@@ -11,7 +11,11 @@ export default defineConfig({
     },
     coverage: {
       reportsDirectory: './test-results/frontend-coverage',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      // reporter: ['text', 'json', 'html', 'lcov'],
+      reporters: ['default', 'junit'],
+      outputFile: {
+        junit: './test-results/junit.xml'
+      },
       exclude: [
         'node_modules/',
         'dist/',
