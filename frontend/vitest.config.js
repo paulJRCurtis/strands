@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     exclude: [
-      '**/user.lib.python/**',
+      // '**/user.lib.python/**',
       '**/node_modules/**',
       '**/dist/**',
       '**/tests/e2e/**'
@@ -16,7 +16,11 @@ export default defineConfig({
     },
     coverage: {
       reportsDirectory: './test-results',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      // reporter: ['text', 'json', 'html', 'lcov'],
+      reporters: ['default', 'junit'],
+      // outputFile: {
+      //   junit: './test-results/junit.xml'
+      // },
       exclude: [
         '**/user.lib.python/**',
         'node_modules/',
