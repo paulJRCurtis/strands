@@ -135,7 +135,8 @@ pipeline {
                         script {
                             echo 'Checking dependencies for vulnerabilities...'
                             // OWASP Dependency Check
-                            sh 'docker run --rm -v $(pwd):/src owasp/dependency-check --project "Strands Security Platform" --scan /src --format JSON --out /src/dependency-check-report.json'
+                            // sh 'docker run --rm -v $(pwd):/src owasp/dependency-check --project "Strands Security Platform" --scan /src --format JSON --out /src/dependency-check-report.json'
+                            sh 'docker run --rm -u $(id -u):$(id -g) -v $(pwd):/src owasp/dependency-check --project "Strands Security Platform" --scan /src --format JSON --out /src/dependency-check-report.json'
                         }
                     }
                 }
