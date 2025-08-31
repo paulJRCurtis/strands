@@ -50,6 +50,8 @@ pipeline {
                     // Run frontend tests
                     dir('frontend') {
                         sh 'npm run test:coverage'
+                        sh 'cp test-results/junit.xml ../test-results/frontend-test-results.xml'
+                        sh 'cp coverage/cobertura-coverage.xml ../test-results/frontend-coverage.xml'
                         sh 'npm run lint'
                     }
                 }
