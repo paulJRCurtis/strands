@@ -17,7 +17,7 @@ export default defineConfig({
     coverage: {
       reportsDirectory: './test-results',
       // reporter: ['text', 'json', 'html', 'lcov'],
-      reporters: ['default', 'junit'],
+      reporter: ['cobertura'],
       // outputFile: {
       //   junit: './test-results/junit.xml'
       // },
